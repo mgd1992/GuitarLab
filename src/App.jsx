@@ -1,72 +1,23 @@
-import { useState, useEffect } from 'react'
+
 
 import Header from './components/Header'
 import Guitar from './components/Guitar'
-import { db } from './data/db'
+
+import useCart from './hooks/useCart'
 
 
 function App() {
 
-  const initialCart = () => {
-    const localStorageCart = localStorage.getItem('cart')
-    return localStorageCart ? JSON.parse(localStorageCart) : []
-  }
-
-  const [data] = useState(db)
-  const [cart, setCart] = useState(initialCart)
-
-  const MAX_ITEMS = 5
-  const MIN_ITEMS = 1
-
-  useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart))
-  }, [cart])
-
-  function addToCart(item) {
-
-    const itemExists = cart.findIndex(guitar => guitar.id === item.id)
-    if (itemExists >= 0) {
-      if (cart[itemExists].quantity >= MAX_ITEMS) return
-      const updatedCart = [...cart]
-      updatedCart[itemExists].quantity += 1
-      setCart(updatedCart)
-    } else {
-      const newItem = { ...item, quantity: 1 }
-      setCart(cart => [...cart, newItem])
-    }
-
-
-  }
-
-  const removeGuitar = (guitarId) => {
-    setCart(prevCart => prevCart.filter(guitar => guitar.id !== guitarId))
-  }
-
-  const increaseQuantity = (id) => {
-    const newCart = cart.map(item => {
-      if (item.id === id && item.quantity < MAX_ITEMS) {
-        return {
-          ...item,
-          quantity: item.quantity + 1
-        }
-      }
-      return item
-    })
-    setCart(newCart)
-  }
-
-  const decrementar = (id) => {
-    const restarItemCart = cart.map(item => {
-      if (item.id === id && item.quantity >= MIN_ITEMS) {
-        return {
-          ...item,
-          quantity: item.quantity - 1
-        }
-      }
-      return item
-    }).filter(item => item.quantity > 0)
-    setCart(restarItemCart)
-  }
+  const { data,
+    cart,
+    addToCart,
+    decrementar,
+    removeGuitar,
+    increaseQuantity,
+    clearCart,
+    isEmpty,
+    cartTotal
+  } = useCart()
 
   return (
     <>
@@ -74,9 +25,11 @@ function App() {
       <Header
         cart={cart}
         removeGuitar={removeGuitar}
-        setCart={setCart}
         increaseQuantity={increaseQuantity}
         decrementar={decrementar}
+        clearCart={clearCart}
+        isEmpty={isEmpty}
+        cartTotal={cartTotal}
       />
 
       < main className="container-xl mt-5">
@@ -85,7 +38,7 @@ function App() {
         <div className="row mt-5">
 
           {data.map((d) => (
-            <Guitar key={d.id} guitar={d} setCart={setCart} addToCart={addToCart} />
+            <Guitar key={d.id} guitar={d} addToCart={addToCart} />
           ))}
 
         </div>
